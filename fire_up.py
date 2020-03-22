@@ -5,7 +5,6 @@ import os
 import textwrap
 import datetime
 import argparse
-import subprocess
 
 class FireUp:
 
