@@ -5,13 +5,14 @@ import os
 import textwrap
 import datetime
 import argparse
+import subprocess
 
 class FireUp:
 
     def __init__(self,
                  project_name='new_project',
-                 author='Silvio Lugaro',
-                 email='lugaro.silvio@gmail.com'
+                 author='placeholder',
+                 email='placeholder'
                 ):
 
         format_code = lambda x: textwrap.dedent(x).strip()
@@ -153,29 +154,116 @@ class FireUp:
             '''
         )
 
+        sphinx_makebat_code = format_code(
+            f'''
+            @ECHO OFF
+
+            pushd %~dp0
+
+            REM Command file for Sphinx documentation
+
+            if "%SPHINXBUILD%" == "" (
+                set SPHINXBUILD=sphinx-build
+            )
+            set SOURCEDIR=.
+            set BUILDDIR=_build
+
+            if "%1" == "" goto help
+
+            %SPHINXBUILD% >NUL 2>NUL
+            if errorlevel 9009 (
+                echo.
+                echo.The 'sphinx-build' command was not found. Make sure you have Sphinx
+                echo.installed, then set the SPHINXBUILD environment variable to point
+                echo.to the full path of the 'sphinx-build' executable. Alternatively you
+                echo.may add the Sphinx directory to PATH.
+                echo.
+                echo.If you don't have Sphinx installed, grab it from
+                echo.http://sphinx-doc.org/
+                exit /b 1
+            )
+
+            %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+            goto end
+
+            :help
+            %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+
+            :end
+            popd
+            '''
+        )
+
+        sphinx_makefile_code = format_code(
+            f'''
+            # Minimal makefile for Sphinx documentation
+            #
+
+            # You can set these variables from the command line, and also
+            # from the environment for the first two.
+            SPHINXOPTS    ?=
+            SPHINXBUILD   ?= sphinx-build
+            SOURCEDIR     = .
+            BUILDDIR      = _build
+
+            # Put it first so that "make" without argument is like "make help".
+            help:
+                @$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+            .PHONY: help Makefile
+
+            # Catch-all target: route all unknown targets to Sphinx using the new
+            # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+            %: Makefile
+                @$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+            '''
+        )
+
         readme_code = format_code(
             f'''
             # {project_name_str}
-
             {project_name_str} is a Python package.
-
             ## Installation
-
             Use the package manager [pip](https://pip.pypa.io/en/stable/) to install {project_name} in edit mode.
-
             ```python
             pip install -e . # in the root folder (look for setup.py)
             ```
-
             ## Usage
-
+            ### Requirements
+            Install [pipreqs](https://pypi.org/project/pipreqs/) via `pip` and execute the following in the root folder
+            ```python
+            >>> pipreqs ./
+            ```
+            to save dependencies to ./requirements.txt.
+            ### Git
+            Cheatsheet for basic `git` usage (recommended w/ GitKraken 6.5.1):
+            - `git init` in the root folder to initialize repository
+            - `git status` to check Git staging area status
+            - `git add .` to add every unstaged file to the Git repository
+            - `git commit -m <message>` to commit staged files
+            - `git log` to obtain commit log history
+            - `git checkout <commit_id>` to step back/forward to a given commit
+            - `git push` to push to remote repository
+            - `git pull` to pull from remote repository
+            - `git merge` to merge two branches
+            ### Sphinx
+            Install both [sphinx](https://www.sphinx-doc.org/en/master/usage/installation.html), [sphinxcontrib-napoleon](https://pypi.org/project/sphinxcontrib-napoleon/) and [sphinx-autoapi](https://pypi.org/project/sphinx-autoapi/) via `pip` (recommended usage w/ Visual Studio Code `autoDocstring` extension). Then, execute the following in the root directory to build html docs
+            ```python
+            >>> cd ./docks
+            >>> make clean && make html
+            ```
+            ### Streamlit
+            Install [streamlit](https://docs.streamlit.io/) via `pip` and execute the following in the root folder to run Streamlit sample app (by default on port 8501)
             ```python
             >>> cd ./app
             >>> streamlit run {project_name}_app.py
             ```
-
+            ### Docker
+            Cheatsheet for basic Docker usage:
+            - `docker image build -t <image_name> .` in the root folder (look for Dockerfile) to build project image attached to the terminal
+            - `docker container run --publish <forward_port>:<container_port> --detach --name <container_alias> <image_name>` to launch container (runnable instance of the given image) detached from the terminal
+            - `docker container rm --force <container_alias>` to shutdown the given container
             ## Authors
-
             * **{author}**
             '''
         )
@@ -705,10 +793,22 @@ class FireUp:
             file.write(sphinx_index_code)
             file.close()
 
+        # initialize Sphinx make.bat
+        with open(f'{root_dir}/{project_name}/docs/make.bat', 'w') as file:
+            file.write(sphinx_makebat_code)
+            file.close()
+
+        # initialize Sphinx Makefile
+        with open(f'{root_dir}/{project_name}/docs/Makefile', 'w') as file:
+            file.write(sphinx_makefile_code)
+            file.close()
+
         # initialize Sphinx '<project_name>'.rst
         with open(f'{root_dir}/{project_name}/docs/{project_name}.rst', 'w') as file:
             file.write(sphinx_package_code)
             file.close()
+
+
 
 def main():
     parser = argparse.ArgumentParser(description='Initialize a Python project folder.')
@@ -726,7 +826,7 @@ def main():
         action="store",
         dest="author",
         help="the name of the author",
-        default="Silvio Lugaro"
+        default="placeholder"
     )
     parser.add_argument(
         '-m',
@@ -734,14 +834,17 @@ def main():
         action="store",
         dest="email",
         help="the email of the author",
-        default="lugaro.silvio@gmail.com"
+        default="placeholder"
     )
     args = parser.parse_args()
-    new_project = FireUp(
-        project_name=args.project_name,
-        author=args.author,
-        email=args.email
-    )
+    if (args.author != 'placeholder') and (args.email != 'placeholder'):
+        FireUp(
+            project_name=args.project_name,
+            author=args.author,
+            email=args.email
+        )
+    else:
+        FireUp(project_name=args.project_name)
 
 if __name__ == '__main__':
     main()
