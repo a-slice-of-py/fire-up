@@ -248,7 +248,7 @@ class FireUp:
             ### Sphinx
             Install both [sphinx](https://www.sphinx-doc.org/en/master/usage/installation.html), [sphinxcontrib-napoleon](https://pypi.org/project/sphinxcontrib-napoleon/) and [sphinx-autoapi](https://pypi.org/project/sphinx-autoapi/) via `pip` (recommended usage w/ Visual Studio Code `autoDocstring` extension). Then, execute the following in the root directory to build html docs
             ```python
-            >>> cd ./docks
+            >>> cd ./docs
             >>> make clean && make html
             ```
             ### Streamlit
