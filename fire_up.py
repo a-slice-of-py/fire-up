@@ -9,6 +9,7 @@ import argparse
 class FireUp:
 
     def __init__(self,
+                 target_dir='.',
                  project_name='new_project',
                  author='placeholder',
                  email='placeholder'
@@ -786,7 +787,7 @@ class FireUp:
         requirements_code = format_code('\n'.join(requirements))
 
         # make project root directory
-        root_dir = f'./{project_name}'
+        root_dir = f'{target_dir}/{project_name}'
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
 
@@ -924,6 +925,14 @@ class FireUp:
 def main():
     parser = argparse.ArgumentParser(description='Initialize a Python project folder.')
     parser.add_argument(
+        '-d',
+        '--directory',
+        action="store",
+        dest="target_dir",
+        help="the directory in which initialize the project",
+        default="."
+    )
+    parser.add_argument(
         '-n',
         '--name',
         action="store",
@@ -950,12 +959,13 @@ def main():
     args = parser.parse_args()
     if (args.author != 'placeholder') and (args.email != 'placeholder'):
         FireUp(
+            target_dir=args.target_dir,
             project_name=args.project_name,
             author=args.author,
             email=args.email
         )
     else:
-        FireUp(project_name=args.project_name)
+        FireUp(target_dir=args.target_dir, project_name=args.project_name)
 
 if __name__ == '__main__':
     main()
