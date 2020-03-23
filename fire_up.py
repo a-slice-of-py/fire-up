@@ -27,17 +27,45 @@ class FireUp:
             # -*- coding: utf-8 -*-
 
             import streamlit as st
+            import sys
+            sys.path.append('../{project_name}')
+            from {project_name} import {project_name}
 
             def main():
                 st.sidebar.markdown("# {project_name_str}")
                 st.write("# Hello from {project_name_str}!")
+                st.write({project_name}.{project_name}_test("{project_name} successfully tested!"))
 
             if __name__ == "__main__":
                 main()
             '''
         )
 
-        notebook_code = format_code('''{"cells": []}''')
+        notebook_code = format_code(
+            f'''
+            {{
+            "cells": [
+            {{
+            "cell_type": "code",
+            "metadata": {{
+            }},
+            "outputs": [],
+            "source": [
+                "import sys\\n",
+                "sys.path.append('../{project_name}')\\n",
+                "from {project_name} import {project_name}\\n",
+                "\\n",
+                "{project_name}.{project_name}_test('{project_name} successfully tested!')"
+            ]
+            }}
+            ],
+            "metadata": {{
+            }},
+            "nbformat": 4,
+            "nbformat_minor": 2
+            }}
+            '''
+        )
 
         sphinx_conf_code = format_code(
             f'''
@@ -726,25 +754,74 @@ class FireUp:
             os.makedirs(root_dir)
 
         # make project auxiliary directories
-        aux_dirs = [project_name, 'data', 'notebook', 'scripts']
+        aux_dirs = [project_name, 'app', 'data', 'notebook', 'scripts']
         for dir_ in aux_dirs:
             new_dir = f'{root_dir}/{dir_}'
             if not os.path.exists(new_dir):
                 os.makedirs(new_dir)
 
         # make project main directories
-        main_dirs = [project_name, 'app', 'bin', 'docs', 'utils']
+        main_dirs = [project_name, 'bin', 'docs']
         for dir_ in main_dirs:
             new_dir = f'{root_dir}/{project_name}/{dir_}'
             if not os.path.exists(new_dir):
                 os.makedirs(new_dir)
 
+        # make utils subpackage directory
+        new_dir = f'{root_dir}/{project_name}/{project_name}/utils'
+        if not os.path.exists(new_dir):
+                os.makedirs(new_dir)
+
         # initialize '<project_name>' and 'utils' as proper Python packages
-        pkg_dirs = [project_name, 'utils']
+        pkg_dirs = {
+            project_name: format_code(
+            f'''
+            from . import utils
+            def {project_name}_test(message: str) -> str:
+                """Test function for {project_name} module.
+
+                Parameters
+                ----------
+                message : str
+                    The message to be printed and returned.
+
+                Returns
+                -------
+                str
+                    The returned message.
+                """
+                utils_message = utils.utils_test("utils successfully tested!")
+                print(message)
+                return utils_message + ' ' + message
+            '''
+            ),
+            f'{project_name}/utils': format_code(
+            f'''
+            def utils_test(message: str) -> str:
+                """Test function for utils module.
+
+                Parameters
+                ----------
+                message : str
+                    The message to be printed and returned.
+
+                Returns
+                -------
+                str
+                    The returned message.
+                """
+                print(message)
+                return message
+            '''
+            )
+            }
         for dir_ in pkg_dirs:
             with open(f'{root_dir}/{project_name}/{dir_}/__init__.py', 'w') as file:
+                if dir_ == f'{project_name}/utils':
+                    file.write(format_code(f'''from .utils import *'''))
                 file.close()
-            with open(f'{root_dir}/{project_name}/{dir_}/{dir_}.py', 'w') as file:
+            with open(f"{root_dir}/{project_name}/{dir_}/{dir_.split('/')[-1]}.py", 'w') as file:
+                file.write(pkg_dirs.get(dir_))
                 file.close()
 
         # initialize README.md
@@ -778,7 +855,7 @@ class FireUp:
             file.close()
 
         # initialize sample Streamlit app
-        with open(f'{root_dir}/{project_name}/app/{project_name}_app.py', 'w') as file:
+        with open(f'{root_dir}/app/{project_name}_app.py', 'w') as file:
             file.write(streamlit_code)
             file.close()
 
