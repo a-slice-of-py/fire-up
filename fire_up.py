@@ -255,6 +255,44 @@ class FireUp:
             ```python
             pip install -e . # in the root folder (look for setup.py)
             ```
+            ## Project tree structure
+            ```python
+            {project_name}/
+            │
+            ├── app/
+            │   └── {project_name}_app.py
+            │
+            ├── data/
+            │
+            ├── {project_name}/
+            │   │
+            │   ├── bin/
+            │   │
+            │   ├── docs/
+            │   │   ├── conf.py
+            │   │	├── index.rst
+            │  	│	├── make.bat
+            │   │	├── Makefile
+            │   │	└── new_project.rst
+            │   │
+            │   ├── {project_name}/
+            │  	│	├── utils/
+            │   │	│	├── __init__.py
+            │   │	│	└── utils.py
+            │   │	├── __init__.py
+            │   │	└── {project_name}.py
+            │   │
+            │   ├── .gitignore
+            │   ├── Dockerfile
+            │   ├── README.md
+            │   ├── requirements.txt
+            │   └── setup.py
+            │
+            ├── notebook/
+            │   └── {today}_notebook.ipynb
+            │
+            └──  scripts/
+            ```
             ## Usage
             ### Requirements
             Install [pipreqs](https://pypi.org/project/pipreqs/) via `pip` and execute the following in the root folder
@@ -558,7 +596,6 @@ class FireUp:
 
             # Sphinx documentation
             docs/_build/
-            **/Makefile
             autoapi
 
             # PyBuilder
@@ -825,7 +862,7 @@ class FireUp:
                 file.close()
 
         # initialize README.md
-        with open(f'{root_dir}/{project_name}/README.md', 'w') as file:
+        with open(f'{root_dir}/{project_name}/README.md', 'w', encoding="utf-8") as file:
             file.write(readme_code)
             file.close()
 
