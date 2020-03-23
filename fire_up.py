@@ -884,8 +884,6 @@ class FireUp:
             file.write(sphinx_package_code)
             file.close()
 
-
-
 def main():
     parser = argparse.ArgumentParser(description='Initialize a Python project folder.')
     parser.add_argument(
