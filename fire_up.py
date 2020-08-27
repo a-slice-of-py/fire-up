@@ -8,41 +8,55 @@ import argparse
 
 class FireUp:
 
-    def __init__(self,
-                 target_dir='.',
-                 project_name='new_project',
-                 author='placeholder',
-                 email='placeholder'
-                ):
+    def __init__(
+        self,
+        target_dir,
+        project_name,
+        author,
+        email
+        ):
 
         format_code = lambda x: textwrap.dedent(x).strip()
+
         project_name = project_name.replace(' ', '_')
+        project_name_str = ''.join(list(map(lambda x: x.capitalize(), f'{project_name}'.split('_'))))
+        project_env = f'.{project_name}_env'
+
         today = str(datetime.datetime.now().date()).replace('-','')
         year = today[:4]
-        requirements = ['pandas>=1.0.3', 'numpy>=1.18.0', 'plotly>=4.5.4', 'streamlit>=0.56.0']
-        project_name_str = ''.join(list(map(lambda x: x.capitalize(), f'{project_name}'.split('_'))))
 
-        streamlit_code = format_code(
+        requirements = [
+            'pandas',
+            'numpy',
+            'plotly',
+            'streamlit',
+            'pyjanitor',
+            'boto3',
+            'botocore',
+            'pipreqs',
+            'virtualenv'
+            ]
+        requirements = format_code('\n'.join(requirements))
+
+        streamlit_app = format_code(
             f'''
             #!/usr/bin/env python3
             # -*- coding: utf-8 -*-
+            # pylint: disable=E1120
 
             import streamlit as st
-            import sys
-            sys.path.append('../{project_name}')
-            from {project_name} import {project_name}
 
             def main():
-                st.sidebar.markdown("# {project_name_str}")
+                st.sidebar.markdown("# {project_name_str} - dashboard")
                 st.write("# Hello from {project_name_str}!")
-                st.write({project_name}.{project_name}_test("{project_name} successfully tested!"))
+                st.write("_built with FireUp!_")
 
             if __name__ == "__main__":
                 main()
             '''
-        )
+            )
 
-        notebook_code = format_code(
+        jupyter_notebook = format_code(
             f'''
             {{
             "cells": [
@@ -52,11 +66,7 @@ class FireUp:
             }},
             "outputs": [],
             "source": [
-                "import sys\\n",
-                "sys.path.append('../{project_name}')\\n",
-                "from {project_name} import {project_name}\\n",
-                "\\n",
-                "{project_name}.{project_name}_test('{project_name} successfully tested!')"
+                "# sample notebook\\n"
             ]
             }}
             ],
@@ -66,9 +76,9 @@ class FireUp:
             "nbformat_minor": 2
             }}
             '''
-        )
+            )
 
-        sphinx_conf_code = format_code(
+        sphinx_conf = format_code(
             f'''
             # Configuration file for the Sphinx documentation builder.
             #
@@ -101,9 +111,10 @@ class FireUp:
             # Add any Sphinx extension module names here, as strings. They can be
             # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
             # ones.
-            extensions = ['sphinx.ext.napoleon', 'autoapi.extension']
+            extensions = ['sphinx.ext.napoleon', 'autoapi.extension', 'sphinxcontrib.fulltoc']
 
             # Autoapi settings.
+            autoapi_type = 'python'
             autoapi_dirs = ['../{project_name}']
             autoapi_keep_files = True
 
@@ -141,9 +152,9 @@ class FireUp:
             # so a file named "default.css" will overwrite the builtin "default.css".
             html_static_path = ['_static']
             '''
-        )
+            )
 
-        sphinx_index_code = format_code(
+        sphinx_index = format_code(
             f'''
             .. {project_name_str} documentation master file, created by
                sphinx-quickstart on {today}.
@@ -158,6 +169,9 @@ class FireUp:
                :caption: Contents:
 
                {project_name}
+               core
+               dashboard
+               utils
 
             Indices and tables
             ==================
@@ -166,23 +180,23 @@ class FireUp:
             * :ref:`modindex`
             * :ref:`search`
             '''
-        )
+            )
 
-        sphinx_package_code = format_code(
+        sphinx_contents = lambda x: format_code(
             f'''
-            {project_name} module
-            =============
+            {x} module
+            =======================================
 
-            .. automodule:: {project_name}
+            .. automodule:: {x}
                :members:
                :undoc-members:
                :inherited-members:
                :show-inheritance:
                :private-members:
             '''
-        )
+            )
 
-        sphinx_makebat_code = format_code(
+        sphinx_makebat = format_code(
             f'''
             @ECHO OFF
 
@@ -220,9 +234,9 @@ class FireUp:
             :end
             popd
             '''
-        )
+            )
 
-        sphinx_makefile_code = format_code(
+        sphinx_makefile = format_code(
             f'''
             # Minimal makefile for Sphinx documentation
             #
@@ -245,64 +259,75 @@ class FireUp:
             %: Makefile
                 @$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
             '''
-        )
+            )
 
-        readme_code = format_code(
+        readme = format_code(
             f'''
             # {project_name_str}
-            {project_name_str} is a Python package.
+
+            {project_name_str} is a Python package initialized with FireUp!
+
             ## Installation
+
             Use the package manager [pip](https://pip.pypa.io/en/stable/) to install {project_name} in edit mode.
+
             ```python
-            pip install -e . # in the root folder (look for setup.py)
+            >>> pip install -e . # in the root folder (look for setup.py)
             ```
+
             ## Project tree structure
+
             ```python
-            {project_name}/
-            │
-            ├── app/
-            │   └── {project_name}_app.py
+            root/
             │
             ├── data/
-            │
+            |
+            ├── docs/
+            │   ├── conf.py
+            │   ├── index.rst
+            │   ├── make.bat
+            │   ├── Makefile
+            │   └── {project_name}.rst
+            |
             ├── {project_name}/
+            |   ├── __init__.py
             │   │
-            │   ├── bin/
+            |   ├── core/
+            │   |   └── __init__.py
             │   │
-            │   ├── docs/
-            │   │   ├── conf.py
-            │   │	├── index.rst
-            │  	│	├── make.bat
-            │   │	├── Makefile
-            │   │	└── new_project.rst
+            |   ├── dashboard/
+            │   |   ├── __init__.py
+            │   │   └── app.py
             │   │
-            │   ├── {project_name}/
-            │  	│	├── utils/
-            │   │	│	├── __init__.py
-            │   │	│	└── utils.py
-            │   │	├── __init__.py
-            │   │	└── {project_name}.py
-            │   │
-            │   ├── .gitignore
-            │   ├── Dockerfile
-            │   ├── README.md
-            │   ├── requirements.txt
-            │   └── setup.py
-            │
-            ├── notebook/
+            |   └── utils/
+            │       └── __init__.py
+            |
+            ├── notebooks/
             │   └── {today}_notebook.ipynb
-            │
-            └──  scripts/
+            |
+            ├── .gitignore
+            ├── Dockerfile
+            ├── README.md
+            ├── requirements.txt
+            └── setup.py
             ```
+
             ## Usage
+
             ### Requirements
+
             Install [pipreqs](https://pypi.org/project/pipreqs/) via `pip` and execute the following in the root folder
+
             ```python
-            >>> pipreqs ./
+            >>> pipreqs ./ [--ignore <dir_to_ignore>[, <dir_to_ignore>, ...]] [--encoding latin]
             ```
+
             to save dependencies to ./requirements.txt.
+
             ### Git
+
             Cheatsheet for basic `git` usage (recommended w/ GitKraken 6.5.1):
+
             - `git init` in the root folder to initialize repository
             - `git status` to check Git staging area status
             - `git add .` to add every unstaged file to the Git repository
@@ -312,29 +337,40 @@ class FireUp:
             - `git push` to push to remote repository
             - `git pull` to pull from remote repository
             - `git merge` to merge two branches
+
             ### Sphinx
+
             Install both [sphinx](https://www.sphinx-doc.org/en/master/usage/installation.html), [sphinxcontrib-napoleon](https://pypi.org/project/sphinxcontrib-napoleon/) and [sphinx-autoapi](https://pypi.org/project/sphinx-autoapi/) via `pip` (recommended usage w/ Visual Studio Code `autoDocstring` extension). Then, execute the following in the root directory to build html docs
+
             ```python
             >>> cd ./docs
             >>> make clean && make html
             ```
+
             ### Streamlit
+
             Install [streamlit](https://docs.streamlit.io/) via `pip` and execute the following in the root folder to run Streamlit sample app (by default on port 8501)
+
             ```python
             >>> cd ./app
             >>> streamlit run {project_name}_app.py
             ```
+
             ### Docker
+
             Cheatsheet for basic Docker usage:
+
             - `docker image build -t <image_name> .` in the root folder (look for Dockerfile) to build project image attached to the terminal
             - `docker container run --publish <forward_port>:<container_port> --detach --name <container_alias> <image_name>` to launch container (runnable instance of the given image) detached from the terminal
             - `docker container rm --force <container_alias>` to shutdown the given container
-            ## Authors
-            * **{author}**
-            '''
-        )
 
-        setup_code = format_code(
+            ## Authors
+
+            - **{author}**
+            '''
+            )
+
+        setup = format_code(
             f'''
             """A setuptools based setup module.
             See:
@@ -345,6 +381,9 @@ class FireUp:
             # Always prefer setuptools over distutils
             from setuptools import setup, find_packages
             from os import path
+
+            with open('requirements.txt') as f:
+                requirements = f.read().splitlines()
 
             # Arguments marked as "Required" below must be included for upload to PyPI.
             # Fields marked as "Optional" may be commented out.
@@ -392,7 +431,7 @@ class FireUp:
 
                 # When your source code is in a subdirectory under the project root, e.g.
                 # `src/`, it is necessary to specify the `package_dir` argument.
-                package_dir={{'': '{project_name}'}},  # Optional
+                # package_dir={{'': '{project_name}'}},  # Optional
 
                 # You can just specify package directories manually here if your project is
                 # simple. Or you can use find_packages().
@@ -403,14 +442,14 @@ class FireUp:
                 #
                 #   py_modules=["my_module"],
                 #
-                packages=find_packages(where='{project_name}'),  # Required
+                packages=find_packages(exclude=['data', 'docs', '{project_env}', 'notebooks']),  # Required
 
                 # Specify which Python versions you support. In contrast to the
                 # 'Programming Language' classifiers above, 'pip install' will check this
                 # and refuse to install the project if the version does not match. If you
                 # do not support Python 2, you can simplify this to '>=3.5' or similar, see
                 # https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
-                python_requires='>=3.5',
+                python_requires='>=3.6',
 
                 # This field lists other packages that your project depends on to run.
                 # Any package you put here will be installed by pip when your project is
@@ -418,12 +457,12 @@ class FireUp:
                 #
                 # For an analysis of "install_requires" vs pip's requirements files see:
                 # https://packaging.python.org/en/latest/requirements.html
-                install_requires={requirements},  # Optional
+                install_requires=requirements,  # Optional
             )
             '''
-        )
+            )
 
-        git_code = format_code(
+        gitignore = format_code(
             f'''
 
             # Created by https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
@@ -743,12 +782,17 @@ class FireUp:
             *.bmp
             *.dib
 
+            # data
+            /data/
+
+            # env
+            {project_env}
 
             # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
             '''
-        )
+            )
 
-        docker_code = format_code(
+        dockerfile = format_code(
             f'''
             # Copyright (c).
             # Confidential and intended for internal use only.
@@ -757,170 +801,121 @@ class FireUp:
             ARG BASE_CONTAINER=python:3.7
             FROM $BASE_CONTAINER
 
+            # ENV AWS_PROFILE=ambiente-dev
+
             LABEL maintainer="{author} <{email}>"
 
             # Copy project files
-            COPY ./ /./
+            # COPY ./ /./
+            COPY . /
 
             # streamlit-specific commands
             RUN mkdir -p /root/.streamlit
-            RUN bash -c 'echo -e "\
-            [general]\n\
-            email = \"\"\n\
+            RUN bash -c 'echo -e "\\
+            [general]\\n\\
+            email = \\"\\"\\n\\
             " > /root/.streamlit/credentials.toml'
-            RUN bash -c 'echo -e "\
-            [server]\n\
-            enableCORS = false\n\
+            RUN bash -c 'echo -e "\\
+            [server]\\n\\
+            enableCORS = false\\n\\
             " > /root/.streamlit/config.toml'
 
             # exposing default port for streamlit
             EXPOSE 8501
 
             # copy over and install packages
-            RUN pip install -r ./requirements.txt
+            # RUN pip install -r ./requirements.txt
+            RUN pip install -e .
 
             # run app
-            CMD streamlit run ./app/{project_name}_app.py
+            CMD streamlit run ./{project_name}/dashboard/app.py # -- --profile $AWS_PROFILE --server.headless false
             '''
-        )
-
-        requirements_code = format_code('\n'.join(requirements))
+            )
 
         # make project root directory
-        root_dir = f'{target_dir}/{project_name}'
+        root_dir = f'{target_dir}/root'
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
 
         # make project auxiliary directories
-        aux_dirs = [project_name, 'app', 'data', 'notebook', 'scripts']
+        aux_dirs = [project_name, 'docs', 'data', 'notebooks']
         for dir_ in aux_dirs:
             new_dir = f'{root_dir}/{dir_}'
             if not os.path.exists(new_dir):
                 os.makedirs(new_dir)
+        # make `project_name` dir a proper Python package
+        with open(f'{root_dir}/{project_name}/__init__.py', 'w') as file:
+                file.close()
 
         # make project main directories
-        main_dirs = [project_name, 'bin', 'docs']
+        main_dirs = ['core', 'dashboard', 'utils']
         for dir_ in main_dirs:
             new_dir = f'{root_dir}/{project_name}/{dir_}'
             if not os.path.exists(new_dir):
                 os.makedirs(new_dir)
-
-        # make utils subpackage directory
-        new_dir = f'{root_dir}/{project_name}/{project_name}/utils'
-        if not os.path.exists(new_dir):
-                os.makedirs(new_dir)
-
-        # initialize '<project_name>' and 'utils' as proper Python packages
-        pkg_dirs = {
-            project_name: format_code(
-            f'''
-            from . import utils
-            def {project_name}_test(message: str) -> str:
-                """Test function for {project_name} module.
-
-                Parameters
-                ----------
-                message : str
-                    The message to be printed and returned.
-
-                Returns
-                -------
-                str
-                    The returned message.
-                """
-                utils_message = utils.utils_test("utils successfully tested!")
-                print(message)
-                return utils_message + ' ' + message
-            '''
-            ),
-            f'{project_name}/utils': format_code(
-            f'''
-            def utils_test(message: str) -> str:
-                """Test function for utils module.
-
-                Parameters
-                ----------
-                message : str
-                    The message to be printed and returned.
-
-                Returns
-                -------
-                str
-                    The returned message.
-                """
-                print(message)
-                return message
-            '''
-            )
-            }
-        for dir_ in pkg_dirs:
-            with open(f'{root_dir}/{project_name}/{dir_}/__init__.py', 'w') as file:
-                if dir_ == f'{project_name}/utils':
-                    file.write(format_code(f'''from .utils import *'''))
-                file.close()
-            with open(f"{root_dir}/{project_name}/{dir_}/{dir_.split('/')[-1]}.py", 'w') as file:
-                file.write(pkg_dirs.get(dir_))
+            with open(f'{new_dir}/__init__.py', 'w') as file:
                 file.close()
 
         # initialize README.md
-        with open(f'{root_dir}/{project_name}/README.md', 'w', encoding="utf-8") as file:
-            file.write(readme_code)
+        with open(f'{root_dir}/README.md', 'w', encoding="utf-8") as file:
+            file.write(readme)
             file.close()
 
         # initialize setup.py
-        with open(f'{root_dir}/{project_name}/setup.py', 'w') as file:
-            file.write(setup_code)
+        with open(f'{root_dir}/setup.py', 'w') as file:
+            file.write(setup)
             file.close()
 
         # initialize requirements.txt
-        with open(f'{root_dir}/{project_name}/requirements.txt', 'w') as file:
-            file.write(requirements_code)
+        with open(f'{root_dir}/requirements.txt', 'w') as file:
+            file.write(requirements)
             file.close()
 
         # initialize .gitignore
-        with open(f'{root_dir}/{project_name}/.gitignore', 'w') as file:
-            file.write(git_code)
+        with open(f'{root_dir}/.gitignore', 'w') as file:
+            file.write(gitignore)
             file.close()
 
         # initialize Dockerfile
-        with open(f'{root_dir}/{project_name}/Dockerfile', 'w') as file:
-            file.write(docker_code)
+        with open(f'{root_dir}/Dockerfile', 'w') as file:
+            file.write(dockerfile)
             file.close()
 
         # initialize sample notebook
-        with open(f'{root_dir}/notebook/{today}_notebook.ipynb', 'w') as file:
-            file.write(notebook_code)
+        with open(f'{root_dir}/notebooks/{today}_notebook.ipynb', 'w') as file:
+            file.write(jupyter_notebook)
             file.close()
 
         # initialize sample Streamlit app
-        with open(f'{root_dir}/app/{project_name}_app.py', 'w') as file:
-            file.write(streamlit_code)
+        with open(f'{root_dir}/{project_name}/dashboard/app.py', 'w') as file:
+            file.write(streamlit_app)
             file.close()
 
         # initialize Sphinx conf.py
-        with open(f'{root_dir}/{project_name}/docs/conf.py', 'w') as file:
-            file.write(sphinx_conf_code)
+        with open(f'{root_dir}/docs/conf.py', 'w') as file:
+            file.write(sphinx_conf)
             file.close()
 
         # initialize Sphinx index.rst
-        with open(f'{root_dir}/{project_name}/docs/index.rst', 'w') as file:
-            file.write(sphinx_index_code)
+        with open(f'{root_dir}/docs/index.rst', 'w') as file:
+            file.write(sphinx_index)
             file.close()
 
         # initialize Sphinx make.bat
-        with open(f'{root_dir}/{project_name}/docs/make.bat', 'w') as file:
-            file.write(sphinx_makebat_code)
+        with open(f'{root_dir}/docs/make.bat', 'w') as file:
+            file.write(sphinx_makebat)
             file.close()
 
         # initialize Sphinx Makefile
-        with open(f'{root_dir}/{project_name}/docs/Makefile', 'w') as file:
-            file.write(sphinx_makefile_code)
+        with open(f'{root_dir}/docs/Makefile', 'w') as file:
+            file.write(sphinx_makefile)
             file.close()
 
         # initialize Sphinx '<project_name>'.rst
-        with open(f'{root_dir}/{project_name}/docs/{project_name}.rst', 'w') as file:
-            file.write(sphinx_package_code)
-            file.close()
+        for _ in main_dirs.extend([f'{project_name}']):
+            with open(f'{root_dir}/docs/{_}.rst', 'w') as file:
+                file.write(sphinx_contents(_))
+                file.close()
 
 def main():
     parser = argparse.ArgumentParser(description='Initialize a Python project folder.')
@@ -934,11 +929,11 @@ def main():
     )
     parser.add_argument(
         '-n',
-        '--name',
+        '--project-name',
         action="store",
         dest="project_name",
         help="the name of the project (will be used for root dir and package name)",
-        default="fire_up"
+        default="new_project"
     )
     parser.add_argument(
         '-a',
@@ -946,7 +941,7 @@ def main():
         action="store",
         dest="author",
         help="the name of the author",
-        default="placeholder"
+        default="Silvio Lugaro"
     )
     parser.add_argument(
         '-m',
@@ -954,18 +949,15 @@ def main():
         action="store",
         dest="email",
         help="the email of the author",
-        default="placeholder"
+        default="silvio.lugaro@gruppoiren.it"
     )
     args = parser.parse_args()
-    if (args.author != 'placeholder') and (args.email != 'placeholder'):
-        FireUp(
-            target_dir=args.target_dir,
-            project_name=args.project_name,
-            author=args.author,
-            email=args.email
-        )
-    else:
-        FireUp(target_dir=args.target_dir, project_name=args.project_name)
+    FireUp(
+        target_dir=args.target_dir,
+        project_name=args.project_name,
+        author=args.author,
+        email=args.email
+    )
 
 if __name__ == '__main__':
     main()
