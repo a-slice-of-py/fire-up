@@ -23,7 +23,6 @@ class FireUp:
         project_env = f'.{project_name}_env'
 
         today = str(datetime.datetime.now().date()).replace('-','')
-        year = today[:4]
 
         requirements = [
             'pandas',
@@ -75,189 +74,6 @@ class FireUp:
             "nbformat": 4,
             "nbformat_minor": 2
             }}
-            '''
-            )
-
-        sphinx_conf = format_code(
-            f'''
-            # Configuration file for the Sphinx documentation builder.
-            #
-            # This file only contains a selection of the most common options. For a full
-            # list see the documentation:
-            # https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-            # -- Path setup --------------------------------------------------------------
-
-            # If extensions (or modules to document with autodoc) are in another directory,
-            # add these directories to sys.path here. If the directory is relative to the
-            # documentation root, use os.path.abspath to make it absolute, like shown here.
-            #
-            import os
-            import sys
-            sys.path.insert(0, os.path.abspath("../{project_name}"))
-
-            numpydoc_show_class_members = False
-            # -- Project information -----------------------------------------------------
-
-            project = '{project_name_str}'
-            copyright = '{year}, {author}'
-            author = '{author}'
-
-            # The full version, including alpha/beta/rc tags
-            release = '1.0.0'
-
-            # -- General configuration ---------------------------------------------------
-
-            # Add any Sphinx extension module names here, as strings. They can be
-            # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-            # ones.
-            extensions = ['sphinx.ext.napoleon', 'autoapi.extension', 'sphinxcontrib.fulltoc']
-
-            # Autoapi settings.
-            autoapi_type = 'python'
-            autoapi_dirs = ['../{project_name}']
-            autoapi_keep_files = True
-
-            # Napoleon extension settings.
-            napoleon_google_docstring = True
-            napoleon_numpy_docstring = True
-            napoleon_include_init_with_doc = True
-            napoleon_include_private_with_doc = True
-            napoleon_include_special_with_doc = True
-            napoleon_use_admonition_for_examples = False
-            napoleon_use_admonition_for_notes = False
-            napoleon_use_admonition_for_references = False
-            napoleon_use_ivar = False
-            napoleon_use_param = True
-            napoleon_use_keyword = True
-            napoleon_use_rtype = False
-
-            # Add any paths that contain templates here, relative to this directory.
-            templates_path = ['_templates']
-
-            # List of patterns, relative to source directory, that match files and
-            # directories to ignore when looking for source files.
-            # This pattern also affects html_static_path and html_extra_path.
-            exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-            # -- Options for HTML output -------------------------------------------------
-
-            # The theme to use for HTML and HTML Help pages.  See the documentation for
-            # a list of builtin themes.
-            #
-            html_theme = 'sphinx_rtd_theme'
-
-            # Add any paths that contain custom static files (such as style sheets) here,
-            # relative to this directory. They are copied after the builtin static files,
-            # so a file named "default.css" will overwrite the builtin "default.css".
-            html_static_path = ['_static']
-            '''
-            )
-
-        sphinx_index = format_code(
-            f'''
-            .. {project_name_str} documentation master file, created by
-               sphinx-quickstart on {today}.
-               You can adapt this file completely to your liking, but it should at least
-               contain the root `toctree` directive.
-
-            Welcome to {project_name_str} documentation!
-            =============================================================================
-
-            .. toctree::
-               :maxdepth: 2
-               :caption: Contents:
-
-               {project_name}
-               core
-               dashboard
-               utils
-
-            Indices and tables
-            ==================
-
-            * :ref:`genindex`
-            * :ref:`modindex`
-            * :ref:`search`
-            '''
-            )
-
-        sphinx_contents = lambda x: format_code(
-            f'''
-            {x} module
-            =======================================
-
-            .. automodule:: {x}
-               :members:
-               :undoc-members:
-               :inherited-members:
-               :show-inheritance:
-               :private-members:
-            '''
-            )
-
-        sphinx_makebat = format_code(
-            f'''
-            @ECHO OFF
-
-            pushd %~dp0
-
-            REM Command file for Sphinx documentation
-
-            if "%SPHINXBUILD%" == "" (
-                set SPHINXBUILD=sphinx-build
-            )
-            set SOURCEDIR=.
-            set BUILDDIR=_build
-
-            if "%1" == "" goto help
-
-            %SPHINXBUILD% >NUL 2>NUL
-            if errorlevel 9009 (
-                echo.
-                echo.The 'sphinx-build' command was not found. Make sure you have Sphinx
-                echo.installed, then set the SPHINXBUILD environment variable to point
-                echo.to the full path of the 'sphinx-build' executable. Alternatively you
-                echo.may add the Sphinx directory to PATH.
-                echo.
-                echo.If you don't have Sphinx installed, grab it from
-                echo.http://sphinx-doc.org/
-                exit /b 1
-            )
-
-            %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
-            goto end
-
-            :help
-            %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
-
-            :end
-            popd
-            '''
-            )
-
-        sphinx_makefile = format_code(
-            f'''
-            # Minimal makefile for Sphinx documentation
-            #
-
-            # You can set these variables from the command line, and also
-            # from the environment for the first two.
-            SPHINXOPTS    ?=
-            SPHINXBUILD   ?= sphinx-build
-            SOURCEDIR     = .
-            BUILDDIR      = _build
-
-            # Put it first so that "make" without argument is like "make help".
-            help:
-                @$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-
-            .PHONY: help Makefile
-
-            # Catch-all target: route all unknown targets to Sphinx using the new
-            # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-            %: Makefile
-                @$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
             '''
             )
 
@@ -337,15 +153,6 @@ class FireUp:
             - `git push` to push to remote repository
             - `git pull` to pull from remote repository
             - `git merge` to merge two branches
-
-            ### Sphinx
-
-            Install both [sphinx](https://www.sphinx-doc.org/en/master/usage/installation.html), [sphinxcontrib-napoleon](https://pypi.org/project/sphinxcontrib-napoleon/) and [sphinx-autoapi](https://pypi.org/project/sphinx-autoapi/) via `pip` (recommended usage w/ Visual Studio Code `autoDocstring` extension). Then, execute the following in the root directory to build html docs
-
-            ```python
-            >>> cd ./docs
-            >>> make clean && make html
-            ```
 
             ### Streamlit
 
@@ -832,8 +639,134 @@ class FireUp:
             '''
             )
 
+        makefile = format_code(
+            f'''
+            include config.mk
+
+            $(ENV_NAME):
+                virtualenv $@
+
+            .PHONY: env
+            env:
+                $(ENV_NAME)
+
+            .PHONY: requirements
+            requirements:
+                requirements.txt
+
+            .PHONY: install
+            install:
+                activate-env
+                pip install -e .
+
+            .PHONY: streamlit-run
+            streamlit-run:
+                cd {project_name}/dashboard
+                streamlit run app.py
+
+            .PHONY: docs-serve
+            docs-serve:
+                cd docs/
+                mkdocs serve
+
+            .PHONY: docs-build
+            docs-serve:
+                cd docs/
+                mkdocs build --no-directory-urls
+
+            .PHONY: activate-env
+            activate-env:
+                $@/Scripts/activate.bat
+
+            .PHONY: register-env
+            register-env:
+                python -m ipykernel install --user --name=$@
+
+            requirements.txt:
+                pipreqs ./
+
+            .PHONY: help
+            help: Makefile
+                @sed -n 's/^## //p' $&lt
+            '''
+            )
+
+        make_config = format_code(
+            f'''
+            ENV_NAME = .env-{project_name.replace("_","-")}
+            '''
+            )
+
+        mkdocs_config = format_code(
+            f'''
+            site_name: {project_name_str}
+            site_url: http://localhost/
+
+            nav:
+              - Home: index.md
+
+            theme:
+              name: "material"
+              palette:
+                scheme: slate
+                primary: orange
+                accent: amber
+              features:
+                - tabs
+
+            markdown_extensions:
+              - toc:
+                permalink: true
+
+            plugins:
+              - search
+              - mkdocstrings
+
+            extra_css:
+              - css/mkdocstrings.css
+            '''
+            )
+
+        mkdocs_css = format_code(
+            '''
+            div.doc-contents:not(.first) {
+            padding-left: 25px;
+            border-left: 4px solid rgba(150, 150, 150);
+            margin-bottom: 80px;
+            }
+
+            h5.doc-heading {
+            text-transform: none !important;
+            }
+
+            h6.hidden-toc {
+            margin: 0 !important;
+            position: relative;
+            top: -70px;
+            }
+
+            h6.hidden-toc::before {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            }
+
+            h6.hidden-toc a.headerlink {
+            display: none;
+            }
+
+            td code {
+            word-break: normal !important;
+            }
+
+            td p {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            }
+            '''
+            )
+
         # make project root directory
-        root_dir = f'{target_dir}/root'
+        root_dir = f'{target_dir}/.fire-up-{project_name.replace("_","-")}'
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
 
@@ -843,6 +776,13 @@ class FireUp:
             new_dir = f'{root_dir}/{dir_}'
             if not os.path.exists(new_dir):
                 os.makedirs(new_dir)
+            if dir_ == 'docs':
+                os.makedirs(f'{new_dir}/css')
+                # make `project_name` dir a proper Python package
+                with open(f'{new_dir}/css/mkdocstrings.css', 'w') as file:
+                    file.write(mkdocs_css)
+                    file.close()
+
         # make `project_name` dir a proper Python package
         with open(f'{root_dir}/{project_name}/__init__.py', 'w') as file:
                 file.close()
@@ -881,6 +821,21 @@ class FireUp:
             file.write(dockerfile)
             file.close()
 
+        # initialize mkdocs.yml
+        with open(f'{root_dir}/mkdocs.yml', 'w') as file:
+            file.write(mkdocs_config)
+            file.close()
+
+        # initialize project Makefile
+        with open(f'{root_dir}/Makefile', 'w') as file:
+            file.write(makefile)
+            file.close()
+
+        # initialize project make config
+        with open(f'{root_dir}/config.mk', 'w') as file:
+            file.write(make_config)
+            file.close()
+
         # initialize sample notebook
         with open(f'{root_dir}/notebooks/{today}_notebook.ipynb', 'w') as file:
             file.write(jupyter_notebook)
@@ -891,31 +846,10 @@ class FireUp:
             file.write(streamlit_app)
             file.close()
 
-        # initialize Sphinx conf.py
-        with open(f'{root_dir}/docs/conf.py', 'w') as file:
-            file.write(sphinx_conf)
+        # initialize docs index
+        with open(f'{root_dir}/docs/index.md', 'w') as file:
+            file.write(f'# Welcome to {project_name_str} documentation\n')
             file.close()
-
-        # initialize Sphinx index.rst
-        with open(f'{root_dir}/docs/index.rst', 'w') as file:
-            file.write(sphinx_index)
-            file.close()
-
-        # initialize Sphinx make.bat
-        with open(f'{root_dir}/docs/make.bat', 'w') as file:
-            file.write(sphinx_makebat)
-            file.close()
-
-        # initialize Sphinx Makefile
-        with open(f'{root_dir}/docs/Makefile', 'w') as file:
-            file.write(sphinx_makefile)
-            file.close()
-
-        # initialize Sphinx '<project_name>'.rst
-        for _ in main_dirs.extend([f'{project_name}']):
-            with open(f'{root_dir}/docs/{_}.rst', 'w') as file:
-                file.write(sphinx_contents(_))
-                file.close()
 
 def main():
     parser = argparse.ArgumentParser(description='Initialize a Python project folder.')
