@@ -20,20 +20,16 @@ class FireUp:
 
         project_name = project_name.replace(' ', '_')
         project_name_str = ''.join(list(map(lambda x: x.capitalize(), f'{project_name}'.split('_'))))
-        project_env = f'.{project_name}_env'
+        project_env = f'.env-{project_name.replace("_","-")}'
 
         today = str(datetime.datetime.now().date()).replace('-','')
 
         requirements = [
-            'pandas',
-            'numpy',
-            'plotly',
-            'streamlit',
-            'pyjanitor',
-            'boto3',
-            'botocore',
             'pipreqs',
-            'virtualenv'
+            'ipykernel',
+            'mkdocs',
+            'mkdocs-material',
+            'mkdocstrings'
             ]
         requirements = format_code('\n'.join(requirements))
 
@@ -96,16 +92,19 @@ class FireUp:
             ```python
             root/
             │
+            ├── {project_env}/
+            │
             ├── data/
             |
             ├── docs/
-            │   ├── conf.py
-            │   ├── index.rst
-            │   ├── make.bat
-            │   ├── Makefile
-            │   └── {project_name}.rst
+            |   |
+            │   ├── css/
+            │   |   └── mkdocstrings.css
+            |   |
+            │   └── index.md
             |
             ├── {project_name}/
+            |   |
             |   ├── __init__.py
             │   │
             |   ├── core/
@@ -121,8 +120,12 @@ class FireUp:
             ├── notebooks/
             │   └── {today}_notebook.ipynb
             |
+            ├── .dockerignore
             ├── .gitignore
+            ├── config.mk
             ├── Dockerfile
+            ├── Makefile
+            ├── mkdocs.yml
             ├── README.md
             ├── requirements.txt
             └── setup.py
@@ -130,46 +133,12 @@ class FireUp:
 
             ## Usage
 
-            ### Requirements
-
-            Install [pipreqs](https://pypi.org/project/pipreqs/) via `pip` and execute the following in the root folder
-
-            ```python
-            >>> pipreqs ./ [--ignore <dir_to_ignore>[, <dir_to_ignore>, ...]] [--encoding latin]
-            ```
-
-            to save dependencies to ./requirements.txt.
-
-            ### Git
-
-            Cheatsheet for basic `git` usage (recommended w/ GitKraken 6.5.1):
-
-            - `git init` in the root folder to initialize repository
-            - `git status` to check Git staging area status
-            - `git add .` to add every unstaged file to the Git repository
-            - `git commit -m <message>` to commit staged files
-            - `git log` to obtain commit log history
-            - `git checkout <commit_id>` to step back/forward to a given commit
-            - `git push` to push to remote repository
-            - `git pull` to pull from remote repository
-            - `git merge` to merge two branches
-
-            ### Streamlit
-
             Install [streamlit](https://docs.streamlit.io/) via `pip` and execute the following in the root folder to run Streamlit sample app (by default on port 8501)
 
             ```python
-            >>> cd ./app
-            >>> streamlit run {project_name}_app.py
+            >>> cd ./{project_name}/dashboard
+            >>> streamlit run app.py
             ```
-
-            ### Docker
-
-            Cheatsheet for basic Docker usage:
-
-            - `docker image build -t <image_name> .` in the root folder (look for Dockerfile) to build project image attached to the terminal
-            - `docker container run --publish <forward_port>:<container_port> --detach --name <container_alias> <image_name>` to launch container (runnable instance of the given image) detached from the terminal
-            - `docker container rm --force <container_alias>` to shutdown the given container
 
             ## Authors
 
@@ -445,6 +414,9 @@ class FireUp:
             docs/_build/
             autoapi
 
+            # mkdocs docs
+            site/
+
             # PyBuilder
             target/
 
@@ -469,6 +441,7 @@ class FireUp:
             ENV/
             env.bak/
             venv.bak/
+            {project_env}
 
             # Spyder project settings
             .spyderproject
@@ -592,9 +565,6 @@ class FireUp:
             # data
             /data/
 
-            # env
-            {project_env}
-
             # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
             '''
             )
@@ -639,61 +609,78 @@ class FireUp:
             '''
             )
 
+        dockerignore = format_code(
+            f'''
+            **/.git
+            **/.vscode
+            **/__pycache__
+            **/docs
+            **/{project_name}.egg-info
+            **/{project_env}
+            **/notebooks
+            '''
+        )
+
         makefile = format_code(
             f'''
             include config.mk
 
-            $(ENV_NAME):
-                virtualenv $@
+            ## __LAUNCH_FROM_BASE_ENV__ create-env: initialize python virtual enviroment
+            .PHONY: create-env
+            create-env:
+            	virtualenv $(ENV_NAME)
 
-            .PHONY: env
-            env:
-                $(ENV_NAME)
-
-            .PHONY: requirements
-            requirements:
-                requirements.txt
-
-            .PHONY: install
-            install:
-                activate-env
-                pip install -e .
-
-            .PHONY: streamlit-run
-            streamlit-run:
-                cd {project_name}/dashboard
-                streamlit run app.py
-
-            .PHONY: docs-serve
-            docs-serve:
-                cd docs/
-                mkdocs serve
-
-            .PHONY: docs-build
-            docs-serve:
-                cd docs/
-                mkdocs build --no-directory-urls
-
+            ## activate-env: activate python virtual enviroment
             .PHONY: activate-env
             activate-env:
-                $@/Scripts/activate.bat
+            	@echo "Command stored! You can past and run it in the CLI."
+            	@echo "$(ENV_NAME)\\Scripts\\activate.bat" | clip
 
+            ## init: initialize package basic dependencies
+            .PHONY: init
+            init:
+            	$(PYTHON) -m pip install -r ./requirements.txt
+
+            ## register-env: register virtual enviroment in jupyter suite
             .PHONY: register-env
             register-env:
-                python -m ipykernel install --user --name=$@
+            	$(PYTHON) -m ipykernel install --user --name=$(ENV_NAME)
 
-            requirements.txt:
-                pipreqs ./
+            ## reqs: save requirements.txt with pipreqs
+            .PHONY: reqs
+            reqs:
+            	pipreqs ./ --encoding latin --ignore $(ENV_NAME)
+
+            ## install-package: install python package in edit mode
+            .PHONY: install-package
+            install-package:
+            	$(PYTHON) -m pip install -e .
+
+            ## streamlit-run: run streamlit app
+            .PHONY: streamlit-run
+            streamlit-run:
+            	cd {project_name}/dashboard && streamlit run app.py
+
+            ## docs-serve: serve package docs on localhost
+            .PHONY: docs-serve
+            docs-serve:
+            	mkdocs serve
+
+            ## docs-build: build package docs as static html website
+            .PHONY: docs-build
+            docs-build:
+            	mkdocs build --no-directory-urls
 
             .PHONY: help
             help: Makefile
-                @sed -n 's/^## //p' $&lt
+            	@sed -n 's/^## //p' $<
             '''
             )
 
         make_config = format_code(
             f'''
-            ENV_NAME = .env-{project_name.replace("_","-")}
+            ENV_NAME = {project_env}
+            PYTHON = $(ENV_NAME)/Scripts/python.exe
             '''
             )
 
@@ -715,8 +702,8 @@ class FireUp:
                 - tabs
 
             markdown_extensions:
-              - toc:
-                permalink: true
+                - toc:
+                    permalink: True
 
             plugins:
               - search
@@ -819,6 +806,11 @@ class FireUp:
         # initialize Dockerfile
         with open(f'{root_dir}/Dockerfile', 'w') as file:
             file.write(dockerfile)
+            file.close()
+
+        # initialize .dockerignore
+        with open(f'{root_dir}/.dockerignore', 'w') as file:
+            file.write(dockerignore)
             file.close()
 
         # initialize mkdocs.yml
