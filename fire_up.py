@@ -875,7 +875,7 @@ def main():
         action="store",
         dest="email",
         help="the email of the author",
-        default="silvio.lugaro@gruppoiren.it"
+        default="silvio.lugaro@gmail.com"
     )
     args = parser.parse_args()
     FireUp(
