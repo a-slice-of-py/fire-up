@@ -20,7 +20,7 @@ class FireUp:
 
         project_name = project_name.replace(' ', '_')
         project_name_str = ''.join(list(map(lambda x: x.capitalize(), f'{project_name}'.split('_'))))
-        project_env = f'.env-{project_name.replace("_","-")}'
+        project_env = f'.venv-{project_name.replace("_","-")}'
 
         today = str(datetime.datetime.now().date()).replace('-','')
 
