@@ -1,4 +1,4 @@
-# FireUp!
+# FireUp
 
 FireUp is a stripped-to-bare-bones Python project template creator.
 
@@ -9,19 +9,22 @@ Its name is inspired to [Google's Python Fire](https://github.com/google/python-
 ## Prerequisites
 
 You need just three ingredients to fully use FireUp:
-- python (>= 3.6)
-- gnu make
-- virtualenv
+
+- [Python](https://www.python.org/downloads/) (>= 3.6)
+- [GNU Make](https://www.gnu.org/software/make/)
+- [virtualenv](https://virtualenv.pypa.io/en/latest/)
+- [Click](https://click.palletsprojects.com/en/7.x/#documentation)
 
 ## Usage
+
 To initialize a new python project with FireUp, all you need to do is clone this gist repo and create a virtual enviroment and install FireUp via `pip install -e .`. It's now sufficient to execute
+
 ```python
-fireup --project-name <PROJECT_NAME>
+fireup
 ```
-replacing `<PROJECT_NAME>` with the desired name for your project.
 
-You can also set via cli other arguments, as the directory in which the project must be initialized and author's name and email.
+and you will be prompted for project creation setup.
 
-Once the project folder has been created, you can cd into it from your base Python enviroment and execute `make create-env` (which requires `virtualenv` to be installed in your base env).
+Once the project folder has been created, you can cd into it from your base Python enviroment and execute `make create-env`.
 
 You are now ready to further setup your project switching to the brand new enviroment and browsing all the default possibilities through `make help`.

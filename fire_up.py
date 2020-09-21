@@ -5,6 +5,7 @@ import os
 import textwrap
 import datetime
 import argparse
+import click
 
 class FireUp:
 
@@ -843,46 +844,37 @@ class FireUp:
             file.write(f'# Welcome to {project_name_str} documentation\n')
             file.close()
 
-def main():
-    parser = argparse.ArgumentParser(description='Initialize a Python project folder.')
-    parser.add_argument(
-        '-d',
-        '--directory',
-        action="store",
-        dest="target_dir",
-        help="the directory in which initialize the project",
-        default="."
+@click.command()
+@click.option(
+    '--name',
+    default='my-project',
+    prompt='Project name',
+    help='Name for the initialized Python project (will be used for folders and other stuff).'
     )
-    parser.add_argument(
-        '-n',
-        '--project-name',
-        action="store",
-        dest="project_name",
-        help="the name of the project (will be used for root dir and package name)",
-        default="new_project"
+@click.option(
+    '--directory',
+    default='.',
+    prompt='Target directory',
+    help='Directory in which the project must be initialized.'
     )
-    parser.add_argument(
-        '-a',
-        '--author',
-        action="store",
-        dest="author",
-        help="the name of the author",
-        default="Silvio Lugaro"
+@click.option(
+    '--author',
+    default='myself',
+    prompt='Author name',
+    help="Project's author name."
     )
-    parser.add_argument(
-        '-m',
-        '--mail',
-        action="store",
-        dest="email",
-        help="the email of the author",
-        default="silvio.lugaro@gmail.com"
+@click.option(
+    '--email',
+    default='myself@placeholder.com',
+    prompt='Author email',
+    help="Project's author email."
     )
-    args = parser.parse_args()
+def main(name, directory, author, email):
     FireUp(
-        target_dir=args.target_dir,
-        project_name=args.project_name,
-        author=args.author,
-        email=args.email
+        target_dir=directory,
+        project_name=name,
+        author=author,
+        email=email
     )
 
 if __name__ == '__main__':
