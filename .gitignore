@@ -1,3 +1,4 @@
+.gitignore
 .venv/
 *.egg-info/
 __pycache__/
