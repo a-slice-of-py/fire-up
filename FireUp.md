@@ -4,6 +4,8 @@ FireUp is a stripped-to-bare-bones Python project template creator.
 
 It somehow resembles projects like [`cookiecutter`](https://github.com/cookiecutter/cookiecutter) or [`pyscaffold`](https://github.com/pyscaffold/pyscaffold) regarding the shared aim, but it has been designed with a crucial difference in its premise. FireUp goal is to provide a hard-coded and restricted set of template features while reducing at most the dependencies required to do so.
 
+Its name is inspired to [Google's Python Fire](https://github.com/google/python-fire#why-is-it-called-fire): while it fires off a Python script, FireUp lets you to initialize your Python project.
+
 ## Prerequisites
 
 You need just three ingredients to fully use FireUp:
