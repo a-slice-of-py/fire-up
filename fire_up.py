@@ -30,7 +30,14 @@ class FireUp:
             'ipykernel',
             'mkdocs',
             'mkdocs-material',
-            'mkdocstrings'
+            'mkdocstrings',
+            'python-dotenv',
+            'loguru',
+            'click',
+            'pytest',
+            'pytest-html',
+            'pydantic',
+            'hydra-core'
             ]
         requirements = format_code('\n'.join(requirements))
 
@@ -41,11 +48,16 @@ class FireUp:
             # pylint: disable=E1120
 
             import streamlit as st
+            from hydra_config import serve_config
 
-            def main():
-                st.sidebar.markdown("# {project_name_str} - dashboard")
-                st.write("# Hello from {project_name_str}!")
+            config = serve_config()
+
+            def main(config : dict = config) -> None:
+
+                st.sidebar.markdown("# My-project - dashboard")
+                st.write("# Hello from My-project!")
                 st.write("_built with FireUp!_")
+                st.write(config)
 
             if __name__ == "__main__":
                 main()
@@ -610,6 +622,24 @@ class FireUp:
             '''
             )
 
+        docker_compose = format_code(
+            f'''
+            version: '3'
+
+            services:
+              dashboard:
+                build:
+                  context: .
+                  dockerfile: ./docker/dashboard/Dockerfile
+                image:
+                ports:
+                 - "80:8501"
+                volumes:
+                 - C:/Users/a00018578/.aws:/root/.aws
+                 - ./dashboard:/src
+            '''
+            )
+
         dockerignore = format_code(
             f'''
             **/.git
@@ -620,7 +650,7 @@ class FireUp:
             **/{project_env}
             **/notebooks
             '''
-        )
+            )
 
         makefile = format_code(
             f'''
@@ -671,6 +701,11 @@ class FireUp:
             .PHONY: docs-build
             docs-build:
             	mkdocs build --no-directory-urls
+
+            ## test: execute tests with pytest and dump html report
+            .PHONY: test
+            test:
+            	cd tests && $(PYTHON) test_loguru.py && pytest --html=pytest-report.html
 
             .PHONY: help
             help: Makefile
@@ -753,13 +788,76 @@ class FireUp:
             '''
             )
 
+        dotenv = format_code(
+            f'''
+            LOGURU_LEVEL='DEBUG'
+            '''
+            )
+
+        package_init = format_code(
+            f'''
+            from dotenv import load_dotenv
+            load_dotenv()
+            '''
+            )
+
+        hydra_config = format_code(
+            f'''
+            import hydra.experimental as he
+            from hydra.core.global_hydra import GlobalHydra
+            from omegaconf import OmegaConf
+
+            def serve_config() -> dict:
+                GlobalHydra.instance().clear()
+                he.initialize(config_path="config")
+                return OmegaConf.to_container(he.compose("config"))
+            '''
+            )
+
+        test_pytest = format_code(
+            f'''
+            # pytest (create make command to execute test with pytest --html=pytest_report.html)
+            class TestClass:
+                def test_passed(self):
+                    x = "cane"
+                    assert "c" in x
+
+                def test_failed(self):
+                    x = "gatto"
+                    assert hasattr(x, "check")
+            '''
+            )
+
+        test_loguru = format_code(
+            f'''
+            from dotenv import load_dotenv
+            load_dotenv()
+            from loguru import logger
+
+            logger.debug("this is a debugging message")
+            logger.info("this is an informational message")
+            logger.warning("this is a warning message")
+            logger.error("this is an error message")
+            logger.critical("this is a critical message")
+
+            print('')
+
+            @logger.catch
+            def divide_by(x):
+                return 1 / x
+
+            if __name__ == '__main__':
+                divide_by(0)
+            '''
+            )
+
         # make project root directory
         root_dir = f'{target_dir}/.fire-up-{project_name.replace("_","-")}'
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
 
         # make project auxiliary directories
-        aux_dirs = [project_name, 'docs', 'data', 'notebooks']
+        aux_dirs = [project_name, 'docs', 'data', 'notebooks', 'tests', 'dashboard', 'docker']
         for dir_ in aux_dirs:
             new_dir = f'{root_dir}/{dir_}'
             if not os.path.exists(new_dir):
@@ -770,13 +868,77 @@ class FireUp:
                 with open(f'{new_dir}/css/mkdocstrings.css', 'w') as file:
                     file.write(mkdocs_css)
                     file.close()
+            elif dir_ == 'docker':
+                os.makedirs(f'{new_dir}/dashboard')
+                # initialize Dockerfile
+                with open(f'{new_dir}/dashboard/Dockerfile', 'w') as file:
+                    file.write(dockerfile)
+                    file.close()
+            elif dir_ == 'dashboard':
+                # initialize sample Streamlit app
+                with open(f'{new_dir}/app.py', 'w') as file:
+                    file.write(streamlit_app)
+                    file.close()
+                with open(f'{new_dir}/utils.py', 'w') as file:
+                    file.close()
+
+                for dashboard_aux_dir in ['assets', 'components']:
+                    dashboard_subdir = f'{new_dir}/{dashboard_aux_dir}'
+                    if not os.path.exists(dashboard_subdir):
+                        os.makedirs(dashboard_subdir)
+                # initialize hydra config
+                with open(f'{new_dir}/hydra_config.py', 'w') as file:
+                    file.write(hydra_config)
+                    file.close()
+                config_dir = f'{new_dir}/config'
+                os.makedirs(f'{config_dir}/animal')
+                with open(f'{config_dir}/config.yaml', 'w') as file:
+                    file.write(
+                        format_code(
+                            f'''
+                            defaults:
+                              - animal: cane
+                            '''
+                            )
+                        )
+                    file.close()
+                with open(f'{config_dir}/animal/cane.yaml', 'w') as file:
+                    file.write(
+                        format_code(
+                            f'''
+                            # @package _group_
+                            nome: fido
+                            verso: bau
+                            '''
+                            )
+                        )
+                    file.close()
+                with open(f'{config_dir}/animal/gatto.yaml', 'w') as file:
+                    file.write(
+                        format_code(
+                            f'''
+                            # @package _group_
+                            nome: micio
+                            verso: miao
+                            '''
+                            )
+                        )
+                    file.close()
+            elif dir_ == 'tests':
+                with open(f'{new_dir}/test_pytest.py', 'w') as file:
+                    file.write(test_pytest)
+                    file.close()
+                with open(f'{new_dir}/test_loguru.py', 'w') as file:
+                    file.write(test_loguru)
+                    file.close()
 
         # make `project_name` dir a proper Python package
         with open(f'{root_dir}/{project_name}/__init__.py', 'w') as file:
-                file.close()
+            file.write(package_init)
+            file.close()
 
         # make project main directories
-        main_dirs = ['core', 'dashboard', 'utils']
+        main_dirs = ['core', 'utils']
         for dir_ in main_dirs:
             new_dir = f'{root_dir}/{project_name}/{dir_}'
             if not os.path.exists(new_dir):
@@ -787,6 +949,11 @@ class FireUp:
         # initialize README.md
         with open(f'{root_dir}/README.md', 'w', encoding="utf-8") as file:
             file.write(readme)
+            file.close()
+
+        # initialize .env
+        with open(f'{root_dir}/.env', 'w', encoding="utf-8") as file:
+            file.write(dotenv)
             file.close()
 
         # initialize setup.py
@@ -805,8 +972,8 @@ class FireUp:
             file.close()
 
         # initialize Dockerfile
-        with open(f'{root_dir}/Dockerfile', 'w') as file:
-            file.write(dockerfile)
+        with open(f'{root_dir}/docker-compose.yml', 'w') as file:
+            file.write(docker_compose)
             file.close()
 
         # initialize .dockerignore
@@ -832,11 +999,6 @@ class FireUp:
         # initialize sample notebook
         with open(f'{root_dir}/notebooks/{today}_notebook.ipynb', 'w') as file:
             file.write(jupyter_notebook)
-            file.close()
-
-        # initialize sample Streamlit app
-        with open(f'{root_dir}/{project_name}/dashboard/app.py', 'w') as file:
-            file.write(streamlit_app)
             file.close()
 
         # initialize docs index
