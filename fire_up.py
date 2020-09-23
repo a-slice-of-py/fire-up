@@ -37,7 +37,8 @@ class FireUp:
             'pytest',
             'pytest-html',
             'pydantic',
-            'hydra-core'
+            'hydra-core',
+            'boto3'
             ]
         requirements = format_code('\n'.join(requirements))
 
@@ -857,7 +858,7 @@ class FireUp:
             os.makedirs(root_dir)
 
         # make project auxiliary directories
-        aux_dirs = [project_name, 'docs', 'data', 'notebooks', 'tests', 'dashboard', 'docker']
+        aux_dirs = [project_name, 'docs', 'data', 'notebooks', 'tests', 'dashboard', 'docker', 'cdk-app']
         for dir_ in aux_dirs:
             new_dir = f'{root_dir}/{dir_}'
             if not os.path.exists(new_dir):
