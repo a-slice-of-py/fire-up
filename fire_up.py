@@ -108,7 +108,29 @@ class FireUp:
             │
             ├── {project_env}/
             │
+            ├── cdk-app/
+            │
+            ├── dashboard/
+            |   |
+            │   ├── assets/
+            |   |
+            │   ├── components/
+            |   |
+            │   ├── config/
+            |   |
+            │   ├── app.py
+            |   |
+            │   ├── hydra_config.py
+            |   |
+            │   └── utils.py
+            │
             ├── data/
+            │
+            ├── docker/
+            |   |
+            │   └── dashboard/
+            |       |
+            │       └── Dockerfile
             |
             ├── docs/
             |   |
@@ -116,6 +138,11 @@ class FireUp:
             │   |   └── mkdocstrings.css
             |   |
             │   └── index.md
+            |
+            ├── notebooks/
+            │   └── {today}_notebook.ipynb
+            │
+            ├── tests/
             |
             ├── {project_name}/
             |   |
@@ -131,13 +158,11 @@ class FireUp:
             |   └── utils/
             │       └── __init__.py
             |
-            ├── notebooks/
-            │   └── {today}_notebook.ipynb
-            |
             ├── .dockerignore
+            ├── .env
             ├── .gitignore
             ├── config.mk
-            ├── Dockerfile
+            ├── docker-compoe.yml
             ├── Makefile
             ├── mkdocs.yml
             ├── README.md
