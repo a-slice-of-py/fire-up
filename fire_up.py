@@ -19,7 +19,7 @@ class FireUp:
 
         format_code = lambda x: textwrap.dedent(x).strip()
 
-        project_name = project_name.replace(' ', '_')
+        project_name = project_name.replace(' ', '_').replace('-', '_')
         project_name_str = ''.join(list(map(lambda x: x.capitalize(), f'{project_name}'.split('_'))))
         project_env = f'.venv-{project_name.replace("_","-")}'
 
@@ -39,7 +39,8 @@ class FireUp:
             'pydantic',
             'hydra-core',
             'boto3',
-            'streamlit'
+            'streamlit',
+            'pylint'
             ]
         requirements = format_code('\n'.join(requirements))
 
@@ -50,7 +51,8 @@ class FireUp:
             # pylint: disable=E1120
 
             import streamlit as st
-            from hydra_config import serve_config
+            import os
+            from {project_name} import serve_config
 
             config = serve_config()
 
@@ -60,6 +62,7 @@ class FireUp:
                 st.write("# Hello from {project_name_str}!")
                 st.write("_built with FireUp!_")
                 st.write(config)
+                st.write(os.environ.get('LOGURU_LEVEL'))
 
             if __name__ == "__main__":
                 main()
@@ -110,6 +113,8 @@ class FireUp:
             ├── {project_env}/
             │
             ├── cdk-app/
+            |
+            ├── config/
             │
             ├── dashboard/
             |   |
@@ -117,11 +122,7 @@ class FireUp:
             |   |
             │   ├── components/
             |   |
-            │   ├── config/
-            |   |
             │   ├── app.py
-            |   |
-            │   ├── hydra_config.py
             |   |
             │   └── utils.py
             │
@@ -190,7 +191,7 @@ class FireUp:
             """
 
             # Always prefer setuptools over distutils
-            from setuptools import setup, find_packages
+            from setuptools import setup, find_packages # type: ignore
             from os import path
 
             with open('requirements.txt') as f:
@@ -819,19 +820,15 @@ class FireUp:
             f'''
             from dotenv import load_dotenv
             load_dotenv()
-            '''
-            )
 
-        hydra_config = format_code(
-            f'''
             import hydra.experimental as he
             from hydra.core.global_hydra import GlobalHydra
             from omegaconf import OmegaConf
 
             def serve_config() -> dict:
                 GlobalHydra.instance().clear()
-                he.initialize(config_path="config")
-                return OmegaConf.to_container(he.compose("config"))
+                he.initialize(config_path="../config")
+                return OmegaConf.to_container(he.compose("config")) # type: ignore
             '''
             )
 
@@ -878,7 +875,7 @@ class FireUp:
             os.makedirs(root_dir)
 
         # make project auxiliary directories
-        aux_dirs = [project_name, 'docs', 'data', 'notebooks', 'tests', 'dashboard', 'docker', 'cdk-app']
+        aux_dirs = [project_name, 'docs', 'data', 'notebooks', 'tests', 'dashboard', 'docker', 'cdk-app', 'config']
         for dir_ in aux_dirs:
             new_dir = f'{root_dir}/{dir_}'
             if not os.path.exists(new_dir):
@@ -895,25 +892,8 @@ class FireUp:
                 with open(f'{new_dir}/dashboard/Dockerfile', 'w') as file:
                     file.write(dockerfile)
                     file.close()
-            elif dir_ == 'dashboard':
-                # initialize sample Streamlit app
-                with open(f'{new_dir}/app.py', 'w') as file:
-                    file.write(streamlit_app)
-                    file.close()
-                with open(f'{new_dir}/utils.py', 'w') as file:
-                    file.close()
-
-                for dashboard_aux_dir in ['assets', 'components']:
-                    dashboard_subdir = f'{new_dir}/{dashboard_aux_dir}'
-                    if not os.path.exists(dashboard_subdir):
-                        os.makedirs(dashboard_subdir)
-                # initialize hydra config
-                with open(f'{new_dir}/hydra_config.py', 'w') as file:
-                    file.write(hydra_config)
-                    file.close()
-                config_dir = f'{new_dir}/config'
-                os.makedirs(f'{config_dir}/animal')
-                with open(f'{config_dir}/config.yaml', 'w') as file:
+            elif dir_ == 'config':
+                with open(f'{new_dir}/config.yaml', 'w') as file:
                     file.write(
                         format_code(
                             f'''
@@ -923,7 +903,8 @@ class FireUp:
                             )
                         )
                     file.close()
-                with open(f'{config_dir}/animal/cane.yaml', 'w') as file:
+                os.makedirs(f'{new_dir}/animal')
+                with open(f'{new_dir}/animal/cane.yaml', 'w') as file:
                     file.write(
                         format_code(
                             f'''
@@ -934,7 +915,7 @@ class FireUp:
                             )
                         )
                     file.close()
-                with open(f'{config_dir}/animal/gatto.yaml', 'w') as file:
+                with open(f'{new_dir}/animal/gatto.yaml', 'w') as file:
                     file.write(
                         format_code(
                             f'''
@@ -945,6 +926,17 @@ class FireUp:
                             )
                         )
                     file.close()
+            elif dir_ == 'dashboard':
+                # initialize sample Streamlit app
+                with open(f'{new_dir}/app.py', 'w') as file:
+                    file.write(streamlit_app)
+                    file.close()
+                with open(f'{new_dir}/utils.py', 'w') as file:
+                    file.close()
+                for dashboard_aux_dir in ['assets', 'components']:
+                    dashboard_subdir = f'{new_dir}/{dashboard_aux_dir}'
+                    if not os.path.exists(dashboard_subdir):
+                        os.makedirs(dashboard_subdir)
             elif dir_ == 'tests':
                 with open(f'{new_dir}/test_pytest.py', 'w') as file:
                     file.write(test_pytest)
