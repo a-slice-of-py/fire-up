@@ -38,7 +38,8 @@ class FireUp:
             'pytest-html',
             'pydantic',
             'hydra-core',
-            'boto3'
+            'boto3',
+            'streamlit'
             ]
         requirements = format_code('\n'.join(requirements))
 
@@ -55,8 +56,8 @@ class FireUp:
 
             def main(config : dict = config) -> None:
 
-                st.sidebar.markdown("# My-project - dashboard")
-                st.write("# Hello from My-project!")
+                st.sidebar.markdown("# {project_name_str} - dashboard")
+                st.write("# Hello from {project_name_str}!")
                 st.write("_built with FireUp!_")
                 st.write(config)
 
@@ -140,7 +141,6 @@ class FireUp:
             │   └── index.md
             |
             ├── notebooks/
-            │   └── {today}_notebook.ipynb
             │
             ├── tests/
             |
@@ -150,10 +150,6 @@ class FireUp:
             │   │
             |   ├── core/
             │   |   └── __init__.py
-            │   │
-            |   ├── dashboard/
-            │   |   ├── __init__.py
-            │   │   └── app.py
             │   │
             |   └── utils/
             │       └── __init__.py
@@ -175,7 +171,7 @@ class FireUp:
             Install [streamlit](https://docs.streamlit.io/) via `pip` and execute the following in the root folder to run Streamlit sample app (by default on port 8501)
 
             ```python
-            >>> cd ./{project_name}/dashboard
+            >>> cd ./dashboard
             >>> streamlit run app.py
             ```
 
@@ -473,7 +469,6 @@ class FireUp:
             *.sage.py
 
             # Environments
-            .env
             .venv
             env/
             venv/
@@ -644,7 +639,7 @@ class FireUp:
             RUN pip install -e .
 
             # run app
-            CMD streamlit run ./{project_name}/dashboard/app.py # -- --profile $AWS_PROFILE --server.headless false
+            CMD streamlit run ./dashboard/app.py # -- --profile $AWS_PROFILE --server.headless false
             '''
             )
 
@@ -716,7 +711,7 @@ class FireUp:
             ## streamlit-run: run streamlit app
             .PHONY: streamlit-run
             streamlit-run:
-            	cd {project_name}/dashboard && streamlit run app.py
+            	cd ./dashboard && streamlit run app.py
 
             ## docs-serve: serve package docs on localhost
             .PHONY: docs-serve
