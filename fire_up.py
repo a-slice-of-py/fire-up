@@ -40,7 +40,8 @@ class FireUp:
             'hydra-core',
             'boto3',
             'streamlit',
-            'pylint'
+            'pylint',
+            'mypy'
             ]
         requirements = format_code('\n'.join(requirements))
 
