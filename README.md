@@ -1,4 +1,4 @@
-# 🔥👆 FireUp
+# FireUp 🔥👆
 
 FireUp is a stripped-to-bare-bones Python project template creator.
 
